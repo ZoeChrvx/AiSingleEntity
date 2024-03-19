@@ -1,85 +1,107 @@
-
-#include <climits>
+#include <algorithm>
 #include <iostream>
-#include <ostream>
-#include <limits>
+#include <climits>
+#include <stdbool.h>
+#include <stdbool.h>
 #include <vector>
-
-int inf = std::numeric_limits<int>::max();
-int steps;
-constexpr int nodes_count = 7;
 using namespace std;
 
-void Result(int dist[])
+enum
 {
-    cout<<"Vertex\t\tDistance from source vertex"<< '\n';
-    for(int v = 0; v<nodes_count; v++)                      
-    { 
-        char str=65+v; 
-        cout<<str<<"\t\t\t"<<dist[v]<< '\n';
-    }
-}
+    Y = 7
+};
 
-int miniDist(int distance[], bool Tset[]) // finding minimum distance
+int minDistance(int distance[], bool Q[])
 {
-    int minimum=INT_MAX;
-    int minDist = 0;
-              
-    for(int v=0;v<nodes_count;v++) 
+    int minimum = INT_MAX;
+    int min_index = 0;
+
+    for (int x = 0; x < Y; x++)
     {
-        if(Tset[v]==false && distance[v]<=minimum)      
+        if (Q[x] == false && distance[x] <= minimum)
         {
-            minimum=distance[v];
-            minDist=v;
+            minimum = distance[x];
+            min_index = x;
+            
         }
     }
-    return minDist;
+    return min_index;
 }
 
-void Dijkstra(int graph[nodes_count][nodes_count], int src)
+void result(int distance[], int prev[])
 {
-    int dist[nodes_count];
-    bool prev[nodes_count];
-    
-    //Q = set
-    vector<int> set;
-    
-    for(int v = 0; v<nodes_count; v++)
+    cout << "Vertex \t\t Distance\t\t Path" << '\n';
+    for (int x = 0; x < Y; x++)
     {
-        dist[v] = INT_MAX;
-        prev[v] = false;
-        set.emplace_back(v);
-
+        cout << x << " \t\t" << distance[x] << " \t\t";
+        int p = prev[x];
+        while(p != -1)
+        {
+            cout<<" "<<static_cast<char>('A' + p)<<",";
+            p = prev[p];
+        }
+        cout<<endl;
     }
-    dist[src]=0;
+}
 
-    for(int v=0; v< nodes_count; v++)
+bool hasOpenNode(bool Q[])
+{
+    for(int i =0; i < Y; i++)
     {
-        int m = miniDist(dist, prev);
-        prev[m]=true;
-        for(int v = 0; v<nodes_count;v++)
-        { 
-            if(!prev[v] && graph[m][v] && dist[m] != INT_MAX && dist[m]+graph[m][v] < dist[v])
+        if(Q[i] == false)
+            return true;
+        
+    }
+    return false;
+}
+
+void dijkstra(int graph[Y][Y], int src)
+{
+    int distance[Y];
+    int prev[Y];
+    for(int y = 0; y < Y ; y++)
+    {
+        prev[y] = -1;
+    }
+    bool Q[Y];
+	
+    for (int i = 0; i < Y; i++)
+    {
+        distance[i] = INT_MAX, Q[i] = false;
+    }
+
+    distance[src] = 0;
+    
+    while (hasOpenNode(Q))
+    {
+        int u = minDistance(distance, Q);
+        Q[u] = true;
+        //int prev;
+        for (int v = 0; v < Y; v++)
+        {
+            if (u!=v && !Q[v] && graph[u][v] && distance[u] != INT_MAX && distance[u] + graph[u][v] < distance[v])
             {
-                dist[v]=dist[m]+graph[m][v];
+                distance[v] = distance[u] + graph[u][v];
+                prev[v] = u;
             }
         }
     }
-
-    Result(dist);
+    result(distance, prev);
 }
 
 
 int main()
 {
-    int graph[nodes_count][nodes_count] = {
-        {0, 10, 15, NULL, 30, NULL, NULL},
-        {NULL, 0, NULL, NULL, NULL, 57, NULL},
-        {15, NULL, 0, 16, NULL, NULL, 52},
-        {NULL, NULL, 13, 0, NULL, NULL, NULL},
-        {30, NULL, NULL, NULL, 0, 11, 34},
-        {NULL, 49, NULL, NULL, 12, 0, NULL},
-        {NULL, NULL, 63, NULL, 35, NULL, 0}
+    int graph[Y][Y] =
+    {
+        0, 10, 15, NULL, 30, NULL, NULL,
+        NULL, 0, NULL, NULL, NULL, 57, NULL,
+        15, NULL, 0, 16, NULL, NULL, 52,
+        NULL, NULL, 13, 0, NULL, NULL, NULL,
+        30, NULL, NULL, NULL, 0, 11, 34,
+        NULL, 49, NULL, NULL, 12, 0, NULL,
+        NULL, NULL, 63, NULL, 35, NULL, 0
     };
-    Dijkstra(graph,2);                        
+    dijkstra(graph, 6);
+    return 0;
 }
